@@ -1,0 +1,85 @@
+﻿@page "/Medicamentos/DeleteMedicamentos"
+@page "/DeleteMedicamentos/{MedicamentoId:int}"
+@using RegistroMedicamentos.Models
+@using RegistroMedicamentos.Services
+@using System.Text.RegularExpressions
+@inject MedicamentosServices medicamentosservice
+@inject NavigationManager navigationmanager
+
+@rendermode InteractiveServer
+
+
+<PageTitle>Eliminar Sistema</PageTitle>
+
+<EditForm Model="@MedicamentoId" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3 class="card-title">Eliminar Medicamento</h3>
+            </div>
+
+            <div class="card-body text-center">
+                <h4 class="text-danger"><strong>¿Estás seguro de que quieres eliminar este sistema?</strong></h4>
+
+                @if (medicamentos != null)
+                {
+                    <div class="mt-3">
+                        <h5><strong>ID:</strong> @medicamentos.MedicamentoId</h5>
+                        <h5><strong>Nombre:</strong> @medicamentos.MedicamentoNombre</h5>
+                        <h5><strong>Cantidad:</strong> @medicamentos.Cantidad</h5>
+                        <h5><strong>Tipo:</strong> @medicamentos.Tipo</h5>
+                        <h5><strong>Fecha:</strong> @medicamentos.Fecha.ToShortDateString()</h5>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <strong>El Medicamento no existe o ya fue eliminado.</strong>
+                    </div>
+                }
+            </div>
+
+            @* Footer con botones *@
+            <div class="card-footer d-flex justify-content-center">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <a href="/Medicamentos/IndexMedicamentos" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+
+
+
+
+<h3>DeleteMedicamentos</h3>
+
+@code {
+
+    [Parameter] public int MedicamentoId { get; set; }
+    public Medicamentos medicamentos { get; set; } = new Medicamentos();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MedicamentoId != 0)
+        {
+            medicamentos = await medicamentosservice.Buscar(MedicamentoId);
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (MedicamentoId != 0)
+        {
+            await medicamentosservice.Eliminar(MedicamentoId);
+        }
+
+        navigationmanager.NavigateTo("/Medicamentos/IndexMedicamentos");
+    }
+
+}

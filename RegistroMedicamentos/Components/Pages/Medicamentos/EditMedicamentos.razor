@@ -1,0 +1,93 @@
+﻿@page "/Medicamentos/EditMedicamentos"
+@page "/EditMedicamentos/{MedicamentoId:int}"
+@using RegistroMedicamentos.Models
+@using RegistroMedicamentos.Services
+@using System.Text.RegularExpressions
+@inject MedicamentosServices medicamentosService
+@inject NavigationManager navigationmanager
+
+@rendermode InteractiveServer
+
+<PageTitle>@Titulo</PageTitle>
+
+<EditForm Model="@medicamentos" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h3 class="card-title">@Titulo</h3>
+            </div>
+
+            <div class="card-body">
+                @* Nombre *@
+                <label><strong>Nombre</strong></label>
+                <div class="input-group mb-3">
+                    <InputText @bind-Value="@medicamentos.MedicamentoNombre" class="form-control" />
+                    <ValidationMessage For="@(() => medicamentos.MedicamentoNombre)" />
+                </div>
+
+                @* Concepto *@
+                <label><strong>Cantidad</strong></label>
+                <div class="input-group mb-3">
+                    <InputNumber @bind-Value="@medicamentos.Cantidad" class="form-control" />
+                    <ValidationMessage For="@(() => medicamentos.Cantidad)" />
+                </div>
+
+
+                <label><strong>Tipo</strong></label>
+                <div class="input-group mb-3">
+                    <InputText @bind-Value="@medicamentos.Tipo" class="form-control" />
+                    <ValidationMessage For="@(() => medicamentos.Tipo)" />
+                </div>
+
+
+             
+            </div>
+
+            @* Footer *@
+            <div class="card-footer d-flex justify-content-center">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">@TextoBoton</button>
+                    <a href="/Medicamentos/IndexMedicamentos" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+
+@code {
+
+    [Parameter] public int MedicamentoId { get; set; }
+    public RegistroMedicamentos.Models.Medicamentos medicamentos { get; set; } = new RegistroMedicamentos.Models.Medicamentos();
+    string TextoBoton = string.Empty;
+    string Titulo = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MedicamentoId != 0)
+        {
+            medicamentos = await medicamentosService.Buscar(MedicamentoId);
+            TextoBoton = "Actualizar Medicamento";
+            Titulo = "Editar medicamento";
+        }
+        else
+        {
+            TextoBoton = "Registrar Medicamento";
+            Titulo = "Nuevo Medicamento";
+        }
+    }
+
+    private async void OnValidSubmit()
+    {
+        if (await medicamentosService.Guardar(medicamentos))
+        {
+            medicamentos = new RegistroMedicamentos.Models.Medicamentos();
+        }
+
+        navigationmanager.NavigateTo("/Medicamentos/IndexMedicamentos");
+    }
+
+}

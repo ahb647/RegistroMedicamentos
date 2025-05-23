@@ -1,0 +1,101 @@
+﻿@page "/Medicamentos/IndexMedicamentos"
+@using RegistroMedicamentos.Models
+@using RegistroMedicamentos.Services
+@using System.Globalization
+@inject MedicamentosServices medicamentosServices
+@inject NavigationManager navigationmanager
+
+<PageTitle>Registro de Medicamentos</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header space-between d-flex justify-content-between align-items-center">
+            <h5 class="card-title">Registro de Medicamentos </h5>
+            <input type="text" class="form-control w-25"
+                   placeholder="Buscar por nombre..."
+                   @bind="filtroBusqueda"
+                   @oninput="ActualizarFiltroBusqueda" />
+            <a href="/Medicamentos/CreateMedicamentos" class="btn btn-primary">
+                <span class="bi bi-plus-square"></span> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Nombre del Medicamento</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (MedicamentosFiltrados.Any())
+                    {
+                        @foreach (var medicamentos in MedicamentosFiltrados)
+                        {
+                            <tr>
+                                <td>@medicamentos.MedicamentoId</td>
+                                <td>@medicamentos.Fecha</td>
+                                <td>@medicamentos.MedicamentoNombre</td>
+                                <td>@medicamentos.Tipo</td>
+                                <td>@medicamentos.Cantidad</td>
+                                <td class="text-center">
+                                    <a href="EditMedicamentos/@medicamentos.MedicamentoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                    <a href="/DeleteTecnico/@medicamentos.MedicamentoId" class="btn btn-outline-danger bi bi-trash"></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center">No hay medicamentos registrados o no coinciden con la búsqueda.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer">
+            <label>Total Medicamentos: @MedicamentosFiltrados.Count()</label>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private string filtroBusqueda { get; set; } = "";
+    private List<RegistroMedicamentos.Models.Medicamentos> ListaMedicamentos { get; set; } = new List<RegistroMedicamentos.Models.Medicamentos>();
+    private List<RegistroMedicamentos.Models.Medicamentos> MedicamentosFiltrados { get; set; } = new List<RegistroMedicamentos.Models.Medicamentos>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar la lista de técnicos desde el servicio
+        ListaMedicamentos = await medicamentosServices.Listar(m => true);
+
+        // Inicializar la lista filtrada con todos los técnicos
+        MedicamentosFiltrados = new  List<RegistroMedicamentos.Models.Medicamentos>(ListaMedicamentos);
+
+    }
+
+    private void ActualizarFiltroBusqueda(ChangeEventArgs e)
+    {
+        filtroBusqueda = e.Value?.ToString() ?? "";
+        MedicamentosFiltrados = ListaMedicamentos
+            .Where(m => string.IsNullOrWhiteSpace(filtroBusqueda) ||
+                       m.MedicamentoNombre.Contains(filtroBusqueda, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        StateHasChanged(); // Forzar actualización de la UI
+    }
+
+
+
+
+
+}
